@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Learn - Electronics Learning Center</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<div class="navbar">
+  <a href="index.html">Home</a>
+  <a href="register.html">Login</a>
+  <a href="learn.html">Learn</a>
+  <a href="assessment.html">Assessment</a>
+  <a href="feedback.html">Feedback</a>
+  <a href="testimonials.html">Testimonials</a>
+  <a href="contact.html">Contact Us</a>
+</div>
+
+<div class="hero">
+  <h1>Complete Learning Modules</h1>
+  <p>Detailed TV and mobile internal parts</p>
+  <p id="welcomeBanner" role="status" aria-live="polite"></p>
+</div>
+
+<div class="container" id="learnRoot"></div>
+
+<script src="main.js" defer></script>
+<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+  const STORAGE_KEYS = {
+    session: "elcSession"
+  };
+
+  function getSessionUser() {
+    try {
+      const value = localStorage.getItem(STORAGE_KEYS.session);
+      return value ? JSON.parse(value) : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function formatCourse(course) {
+    if (course === "mobile") return "Inner workings of mobile";
+    if (course === "tv") return "Inner workings of television";
+    return "Inner workings of mobile and television";
+  }
+
+  function LearnPage() {
+    const user = getSessionUser();
+    const course = user ? user.course : "";
+
+    React.useEffect(() => {
+      const banner = document.getElementById("welcomeBanner");
+      if (!banner) return;
+      if (user) {
+        banner.textContent = `Welcome ${user.fullName}. Your course: ${formatCourse(user.course)}.`;
+      } else {
+        banner.textContent = "";
+      }
+    }, [user]);
+
+    const showTv = course === "tv" || course === "both";
+    const showMobile = course === "mobile" || course === "both";
+    const showBoth = course === "both";
+
+    return (
+      <>
+        {showTv && (
+          <div className="card" id="tvSection">
+            <h2>Inner workings of television</h2>
+            <p>This course explains how a modern TV receives input, processes video and audio, and safely powers the panel.</p>
+            <h3>Module 1: Safety, ESD, and Capacitors</h3>
+            <p>Learn safe disassembly from the first screw. You will map which sections are live, which are isolated, and where high voltage can remain even after the TV is unplugged. We cover ESD basics, how to ground yourself correctly, and why some boards need isolation before probing. You will read safety markings, identify fuses and protection parts, and learn why random probing can damage a panel or the main board.</p>
+            <p>You will also build a safe workflow: power down, wait, verify discharge, and only then measure. We explain capacitor discharge behavior, what tools are safe to use, and how to avoid shorting adjacent pads. By the end, you will know how to set up a clean workspace, avoid static damage, and take measurements without risking the board or yourself.</p>
+            <p>You will finish with a practical safety checklist that includes isolation transformer usage, safe meter ranges, and labeling before you disconnect anything. We also cover how to recognize brittle connectors and when to stop before damage escalates. The goal is to make safety a repeatable habit, not a one time warning, so every session starts with the same controlled, low risk setup.</p>
+            <h3>Module 2: Power Supply and Standby Rails</h3>
+            <p>This module breaks down the TV power board into stages: AC input, rectification, PFC, primary switching, and secondary rails. You will trace how standby voltage stays active and how the main board requests full power. We show how rails rise in sequence and how the enable signals coordinate backlight and audio startup.</p>
+            <p>You will learn to measure rail health and ripple, interpret normal ranges, and recognize symptoms of weak or unstable power. We cover common faults like blown fuses, shorted diodes, and bad capacitors. By comparing standby and main rails, you will decide whether a failure is on the power board, the main board, or downstream circuits.</p>
+            <p>We also show how to use standby voltage as a diagnostic anchor even when the TV appears dead. You will learn when to disconnect downstream boards to confirm a short, and how to interpret a rail that collapses under load. These steps reduce unnecessary board swaps and help you isolate the failure to a single stage of the power system.</p>
+            <h3>Module 3: Main Board and Firmware</h3>
+            <p>Focus on the main board architecture: SoC, memory, tuner interface, and display output. You will follow the boot sequence from ROM to firmware, understand where settings are stored, and see how corruption can cause boot loops, missing inputs, or stuck logos. We also explain how the main board negotiates with the panel and the backlight system.</p>
+            <p>You will practice confirming main board health before replacing it. That includes verifying local regulators, checking for shorted rails, and inspecting firmware storage. We explain when a service menu check is safe, when a firmware update is justified, and how to distinguish a firmware issue from a hardware failure that only looks like software.</p>
+            <p>You will also learn how to compare firmware versions, check option bytes or region settings, and recognize when a board is mismatched to the panel. We discuss EEPROM corruption and why a board can boot but still fail to display. These checks help you decide between firmware repair, board replacement, or a panel compatibility issue.</p>
+            <h3>Module 4: T-CON and Panel Timing</h3>
+            <p>The T-CON is the timing brain for the panel. This module explains how LVDS or eDP signals arrive from the main board and are translated into row and column drive signals. You will learn how timing errors create lines, flicker, or color shifts, and how gate and source drivers depend on stable voltages.</p>
+            <p>We show you how to identify T-CON related faults versus panel failures. You will practice cable inspection, safe reseating, and interpreting visual artifacts that point to a timing issue rather than a backlight problem. This section also covers when a panel issue is likely and how to avoid damaging fragile ribbon cables.</p>
+            <p>We include guidance on safe voltage checks for VGH, VGL, and gamma references, and what out of range values imply. You will learn when a T-CON replacement is reasonable and when the panel itself is the likely failure point. This reduces the risk of replacing the wrong part and wasting time on a non recoverable panel.</p>
+            <h3>Module 5: Backlight Systems</h3>
+            <p>Backlight systems rely on LED strings, current regulation, and protection logic. You will learn how LED drivers sense open and short conditions, how dimming is controlled, and why some TVs show audio with a black screen. We break down common driver topologies and what each protection signal means.</p>
+            <p>You will practice distinguishing no image from no backlight using safe testing. We discuss LED string testing, identifying a single failed diode in a chain, and avoiding overdriving the panel. By the end, you will know when to suspect the driver board, the LED strips, or a control signal from the main board.</p>
+            <p>We also discuss brightness uniformity and aging, showing how uneven illumination can indicate failing strips before total blackout. You will learn how to balance replacement decisions with cost and risk to the panel. These steps help you plan a repair that is both reliable and cost effective for the customer.</p>
+            <h3>Module 6: Audio Chain</h3>
+            <p>Audio travels from the SoC through a codec and amplifier to speakers. This module covers analog and digital paths, including I2S routing, mute lines, and amplifier enable signals. You will learn how volume control works at the firmware level and how protection circuits shut down the amplifier when loads are unsafe.</p>
+            <p>You will practice isolating no sound issues by testing speaker impedance, checking amplifier supply rails, and verifying the audio signal path. We cover common faults like distorted output, crackling, or silent channels. You will learn quick checks that separate speaker damage from amplifier or firmware issues.</p>
+            <p>You will use a simple test tone workflow to confirm channel balance and verify that firmware is not muting output. We also cover how headphone and ARC paths interact with speakers. These checks let you pinpoint whether the issue is in the amp, the speaker load, or a settings path that can be fixed without hardware changes.</p>
+            <h3>Module 7: Inputs and HDMI Handshake</h3>
+            <p>Inputs are more than physical ports. You will learn how HDMI uses EDID to identify display capabilities and how HDCP protects content. This module explains why a TV can show a menu but not a source, and how the scaler and input switch process signals before they reach the panel.</p>
+            <p>You will troubleshoot input failures using known good sources and cables, check for port damage, and validate handshake steps. We explain symptoms of a failing HDMI port, a damaged switch IC, and a bad EDID. By the end, you will know how to isolate the input stage without guessing.</p>
+            <p>We also cover ARC and CEC behavior and why they can interfere with audio or source detection. You will learn how to reset handshake states and verify compatibility with older devices. This helps you close the loop on input repairs and confirm that a port level fix truly restored full functionality.</p>
+            <h3>Module 8: Thermal Management and Preventive Care</h3>
+            <p>Heat is a silent killer in TVs. This module covers heat sink placement, airflow paths, and the role of thermal pads or paste. You will learn which chips run hottest, how temperature affects stability, and why heat causes intermittent failures long before total breakdown.</p>
+            <p>You will practice inspection and preventive maintenance: cleaning dust, verifying fanless airflow, and checking for heat discoloration. We discuss when to replace thermal pads, how to avoid blocking vents, and how to advise users on safe placement. The goal is to reduce repeat failures and extend device life.</p>
+            <p>We finish with practical guidance on placement, ventilation clearance, and safe operating temperatures. You will learn how to recognize long term heat stress on boards and when to recommend changes in setup rather than replacement. This module encourages repairs that last by reducing the environmental causes of repeated failures.</p>
+            <h3>Hands-On Practice</h3>
+            <ul>
+              <li>Identify test points on the power board and verify standby rails</li>
+              <li>Trace a no-backlight symptom to the correct circuit block</li>
+              <li>Validate HDMI handshake and isolate the failing stage</li>
+            </ul>
+            <div className="media-grid">
+              <video className="learn-media" controls preload="metadata" poster="tv.jpg">
+                <source src="tv.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        )}
+
+        {showMobile && (
+          <div className="card" id="mobileSection">
+            <h2>Inner workings of mobile</h2>
+            <p>This course covers smartphone architecture, boot flow, power management, and RF connectivity.</p>
+            <h3>Module 1: Board Layout and Component Identification</h3>
+            <p>This module teaches you how to read a smartphone board like a map. You will identify shields, connectors, ground points, and high risk areas near power and RF sections. We explain labeling conventions, how to spot key chips, and how to find test points without removing unnecessary parts.</p>
+            <p>You will also learn how to create a simple board reference so you can navigate faster during troubleshooting. We show how to trace a line from connector to IC, how to recognize common package types, and how to avoid accidental shorts while probing dense components.</p>
+            <p>You will also practice documenting board layouts with quick photos and notes so you can reassemble without confusion. We explain how to keep track of screws, shields, and flex cables and why proper documentation reduces accidental damage. These habits speed up future diagnostics and keep devices organized throughout repair.</p>
+            <h3>Module 2: SoC, RAM, and Storage</h3>
+            <p>You will study how the SoC connects to RAM and storage and why those paths are critical to boot stability. This module explains the difference between UFS and eMMC, how each handles errors, and why slow or corrupt storage can cause freezes, boot loops, or missing data.</p>
+            <p>We also cover how to recognize memory related failures in the field. You will learn symptoms that point to RAM instability versus storage corruption, and how to confirm the difference using boot behavior and current draw. This helps avoid replacing the wrong parts when software updates cannot resolve the issue.</p>
+            <p>We also discuss recovery options and the limits of reflow or reballing when memory paths fail. You will learn how heat and flex stress can lead to intermittent faults, and why some repairs are not stable long term. This section helps you decide when to attempt deeper work and when to recommend data backup and replacement.</p>
+            <h3>Module 3: Power Rails and Charging Path</h3>
+            <p>Power management is the heart of smartphone repair. You will map the PMIC, understand rail sequencing, and see how the charging IC negotiates with USB C sources. We cover battery protection, temperature sensing, and how unstable rails can prevent boot even when the battery is healthy.</p>
+            <p>You will learn to interpret current draw profiles and recognize patterns like hard shorts, boot loops, or stalled startup. We show how to test the charging path safely, including connector health, cable quality, and power negotiation. This module builds the foundation for diagnosing no power and slow charging cases.</p>
+            <p>We include practical checks for USB port wear, flex cable damage, and charger compatibility. You will learn how to separate a weak charging source from a phone side fault and how to confirm battery health. These steps reduce false diagnoses and make power troubleshooting faster and more reliable.</p>
+            <h3>Module 4: Display and Touch Systems</h3>
+            <p>This module explains how display data and touch sensing work together. You will review MIPI DSI signaling, backlight or OLED power control, and the role of the touch controller. We show how panel types differ and why the same symptom can have different root causes.</p>
+            <p>You will practice isolating display faults from touch faults by checking connectors, flex cables, and control signals. We also cover common failure patterns like lines, flicker, ghost touch, or no touch with visible image. By the end, you can separate a screen issue from a board issue with confidence.</p>
+            <p>We also cover touch calibration and how software settings can affect responsiveness. You will learn how adhesive pressure, frame alignment, and flex cable tension can cause intermittent touch issues. These details help you verify the repair after reassembly and prevent a screen from failing again due to mechanical stress.</p>
+            <h3>Module 5: Audio Subsystem</h3>
+            <p>Audio issues often appear as no mic, no speaker, or distorted output. This module covers codec routing, mic bias, speaker amplification, and headset detection. You will learn how audio paths are switched between speakers, earpiece, and accessories, and how firmware controls those paths.</p>
+            <p>You will practice verifying mic bias voltage, checking speaker impedance, and determining if the failure is hardware or settings. We also discuss moisture damage and how it affects small audio components. These checks help you avoid unnecessary board replacement when a simple part or setting is the real cause.</p>
+            <p>We show how to clean speaker meshes and check for blocked sound paths that mimic hardware failure. You will also learn when a software update or reset can restore audio routing. By combining hardware and software checks, you can solve more audio problems without unnecessary parts replacement.</p>
+            <h3>Module 6: RF Chain and Baseband</h3>
+            <p>The RF chain includes the baseband, filters, switches, power amplifiers, and antenna connections. You will learn how signals move from the SIM interface to the antenna and where failures cause no service, weak signal, or dropouts. This module also explains why small connector issues can look like major board faults.</p>
+            <p>You will practice inspecting antenna contacts, checking coax paths, and validating SIM reader health. We cover how to separate software or carrier issues from true hardware RF problems. With these steps, you can confirm RF faults before deciding on board replacement or advanced rework.</p>
+            <p>We also explain antenna tuning and why small changes in housing or adhesives can affect signal quality. You will learn how to compare signal strength before and after repair and how to spot baseband resets or firmware faults. These checks improve confidence that the RF path is truly stable.</p>
+            <h3>Module 7: Sensors and Thermal Control</h3>
+            <p>Smartphones depend on sensors for stability and safety. This module covers sensor buses, calibration, and how faulty readings affect system behavior. You will learn how proximity, gyro, and thermal sensors report data and how missing sensors can trigger shutdowns or performance limits.</p>
+            <p>We explain thermal throttling in detail and how it can mimic software lag. You will practice checking sensor connections, identifying corrupted sensor data, and confirming thermal shutdown causes. This helps you avoid misdiagnosing a thermal issue as a battery or CPU failure.</p>
+            <p>We cover sensor recalibration after screen or board replacement and how to validate readings quickly. You will learn why poor thermal transfer between the SoC and heat spreader can lead to rapid throttling. These steps ensure the phone behaves normally after repair and does not overheat during daily use.</p>
+            <h3>Module 8: Fault Isolation Workflow</h3>
+            <p>Here you build a repeatable diagnostic workflow. Start with visual inspection, move to power checks, and then test key subsystems in a structured order. We emphasize non invasive steps first so you avoid creating new faults. You will learn how to keep the process fast without skipping critical checks.</p>
+            <p>You will use a decision tree to document symptoms, measurements, and results. This module shows how to conclude whether a problem is software, board, or component level. By the end, you will produce a clear repair plan and know when a device is not cost effective to fix.</p>
+            <p>We also include guidance for estimating repair cost and communicating risk to users. You will learn how to prioritize essential tests when time is limited and how to document your work clearly. This ensures each repair decision is transparent, repeatable, and easy to defend if the device returns later.</p>
+            <h3>Hands-On Practice</h3>
+            <ul>
+              <li>Measure boot current draw and interpret the profile</li>
+              <li>Verify charging negotiation and battery safety circuits</li>
+              <li>Trace a no network issue to the RF block</li>
+            </ul>
+            <div className="media-grid">
+              <video className="learn-media" controls preload="metadata" poster="mobile.jpg">
+                <source src="mobile.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        )}
+
+        {showBoth && (
+          <div className="card" id="bothSection">
+            <h2>Inner workings of mobile and television</h2>
+            <p>This course compares shared electronics principles and builds a transferable troubleshooting workflow.</p>
+            <h3>Module 1: Architecture Mapping</h3>
+            <p>This module compares how TVs and phones are built from similar blocks: power management, processing, display control, and I O. You will learn to map each block across devices and understand how shared concepts make troubleshooting transferable. We focus on recognizing patterns that stay the same even when the hardware looks different.</p>
+            <p>You will practice translating a fault in one device type to an equivalent block in the other. This builds speed and confidence when you face unfamiliar boards. By the end, you can read a block diagram and quickly identify where to start testing regardless of the device category.</p>
+            <p>We also map common test points and discuss how to confirm each block is alive before moving on. You will learn how to compare voltage rails and signal flow across devices, so a successful check on one platform informs the next. This builds a shared language for troubleshooting that saves time and reduces confusion.</p>
+            <h3>Module 2: Power Sequencing and Protection</h3>
+            <p>This module contrasts AC based and battery based power systems. You will learn how enable signals, reset lines, and protection circuits control startup. We explain how devices fail when a rail is missing or a protection circuit trips, and how that looks in startup behavior and current draw.</p>
+            <p>You will practice reading timing order and identifying the point of failure. We show how to tell if a device dies before enable, during enable, or after load. This lets you focus on the correct block instead of chasing symptoms across the entire board.</p>
+            <p>We add examples of how to use a bench power supply to observe a startup curve without the original power source. You will learn how to recognize protection triggers, like overcurrent or overvoltage, and how they present in both device types. This gives you a consistent method to spot early failure points.</p>
+            <h3>Module 3: Display Pipelines</h3>
+            <p>Display pipelines differ in scale but share similar timing and control concepts. You will compare T CON timing with mobile display drivers, and see how signal bandwidth, cable integrity, and connector health affect image quality. This module explains why display issues can be intermittent and why some appear only at certain resolutions or refresh rates.</p>
+            <p>You will learn how to interpret artifacts like lines, flicker, or color shifts across both platforms. We discuss how to test for signal loss versus panel failure and how to confirm whether the source, driver, or panel is at fault. This gives you a consistent approach to display troubleshooting.</p>
+            <p>We also discuss how to use a known good panel or board to validate a suspected failure. You will learn when substitution testing is safe and when it can damage a working panel. These decision rules reduce risk and make display diagnosis more reliable across both platforms.</p>
+            <h3>Module 4: Audio and Codec Differences</h3>
+            <p>Here we compare audio design in TVs and phones. You will study how codecs route signals, how amplifiers are protected, and how speaker loads differ. This section explains why a TV can lose sound while a phone has weak volume, and what each symptom tells you about the signal path.</p>
+            <p>You will practice quick tests that confirm audio integrity, such as checking enable lines, verifying speaker loads, and tracing signal presence. We also show how firmware can mute audio without hardware failure. The goal is to avoid replacing boards when a simple routing or settings issue is the root cause.</p>
+            <p>We include a short checklist for audio verification, including test tones, load checks, and route confirmation. You will learn how to compare expected amplifier behavior between TVs and phones so you can spot abnormal protection states quickly. This makes audio diagnosis consistent even when hardware layouts differ.</p>
+            <h3>Module 5: Connectivity Paths</h3>
+            <p>Connectivity looks different but the logic is similar. You will compare RF front end paths in phones with TV tuner or network modules. We map the path from antenna or network input to the processing block and show where failures commonly occur in connectors, modules, or firmware.</p>
+            <p>You will practice shared troubleshooting steps such as verifying input integrity, checking module power, and confirming firmware communication. This helps you quickly decide if the fault is external, internal, or configuration based. The same structured checks work across both device categories.</p>
+            <p>We also cover firmware and configuration factors that can block connectivity even when hardware is fine. You will learn to verify module power, communication lines, and configuration states before replacement. This approach avoids unnecessary swaps and keeps troubleshooting grounded in evidence.</p>
+            <h3>Module 6: Test Equipment Strategy</h3>
+            <p>Effective troubleshooting depends on choosing the right tool. You will compare multimeter checks, bench power supply profiling, and basic signal tracing. This module explains what each tool can and cannot tell you, and how to use them without harming sensitive circuits.</p>
+            <p>You will learn to set safe current limits, interpret current draw patterns, and decide when deeper analysis is needed. We also cover safe probing techniques and how to avoid shorts on dense boards. By the end, you can select the fastest test that still provides reliable answers.</p>
+            <p>We add guidance on when an oscilloscope or logic probe provides value versus when a multimeter is sufficient. You will learn how to keep measurement setups safe and stable, especially around high frequency lines. This module helps you choose the least invasive test that still provides decisive information.</p>
+            <h3>Module 7: Symptom Trees and Workflow</h3>
+            <p>A symptom tree turns guesswork into a repeatable process. You will learn how to group symptoms, order tests, and record results in a way that leads to clear conclusions. This module shows how to build trees that handle no power, no display, no sound, and intermittent behavior across devices.</p>
+            <p>You will practice verifying a fix, re testing after repair, and documenting what changed. We also cover how to avoid confirmation bias by checking alternative causes. The result is a workflow that improves accuracy and reduces return visits.</p>
+            <p>We finish by showing how to update your symptom tree after each repair so the process improves over time. You will learn how to track repeat failures and adjust the workflow to prevent them. This makes your diagnostics more accurate with every device you service.</p>
+            <h3>Hands-On Practice</h3>
+            <ul>
+              <li>Build a shared checklist for no display failures</li>
+              <li>Compare two repair plans and choose the safest option</li>
+              <li>Document a complete diagnosis report with evidence</li>
+            </ul>
+          </div>
+        )}
+
+        <div style={{ textAlign: "center" }}>
+          <a href="assessment.html" className="button">Ready for Assessment</a>
+        </div>
+      </>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById("learnRoot")).render(<LearnPage />);
+</script>
+</body>
+</html>

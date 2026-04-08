@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Register & Login - Electronics Learning Center</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<div class="navbar">
+  <a href="index.html">Home</a>
+  <a href="register.html">Login</a>
+  <a href="learn.html">Learn</a>
+  <a href="assessment.html">Assessment</a>
+  <a href="feedback.html">Feedback</a>
+  <a href="testimonials.html">Testimonials</a>
+  <a href="contact.html">Contact Us</a>
+</div>
+
+<div class="hero">
+  <div class="container">
+    <h1>Student Access Portal</h1>
+    <p>Register or login to get started</p>
+  </div>
+</div>
+
+<div class="container">
+  <div id="registerRoot"></div>
+</div>
+
+<script src="main.js" defer></script>
+<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+  const STORAGE_KEYS = {
+    usersCsv: "elcUsersCsv",
+    session: "elcSession"
+  };
+
+  const CSV_HEADER = ["fullName", "email", "password", "course", "location", "registeredAt"];
+
+  function initializeCsvStore() {
+    if (!localStorage.getItem(STORAGE_KEYS.usersCsv)) {
+      localStorage.setItem(STORAGE_KEYS.usersCsv, CSV_HEADER.join(",") + "\n");
+    }
+  }
+
+  function parseUsersCsv(csvText) {
+    if (!csvText) return [];
+
+    const lines = csvText.split(/\r?\n/).filter((line) => line.trim().length > 0);
+    if (lines.length <= 1) return [];
+
+    const users = [];
+    for (let i = 1; i < lines.length; i += 1) {
+      const fields = splitCsvLine(lines[i]);
+      users.push({
+        fullName: fields[0] || "",
+        email: (fields[1] || "").toLowerCase(),
+        password: fields[2] || "",
+        course: fields[3] || "",
+        location: fields[4] || "",
+        registeredAt: fields[5] || ""
+      });
+    }
+    return users;
+  }
+
+  function usersToCsv(users) {
+    const rows = [CSV_HEADER.join(",")];
+    users.forEach((user) => {
+      rows.push([
+        csvEscape(user.fullName),
+        csvEscape(user.email),
+        csvEscape(user.password),
+        csvEscape(user.course),
+        csvEscape(user.location),
+        csvEscape(user.registeredAt)
+      ].join(","));
+    });
+    return rows.join("\n") + "\n";
+  }
+
+  function splitCsvLine(line) {
+    const out = [];
+    let current = "";
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i += 1) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          current += '"';
+          i += 1;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (ch === "," && !inQuotes) {
+        out.push(current);
+        current = "";
+      } else {
+        current += ch;
+      }
+    }
+
+    out.push(current);
+    return out;
+  }
+
+  function csvEscape(value) {
+    const text = String(value || "");
+    if (text.indexOf('"') !== -1 || text.indexOf(",") !== -1 || text.indexOf("\n") !== -1) {
+      return '"' + text.replace(/"/g, '""') + '"';
+    }
+    return text;
+  }
+
+  function upsertUserIntoCsv(user) {
+    const users = parseUsersCsv(localStorage.getItem(STORAGE_KEYS.usersCsv));
+    const existingIndex = users.findIndex((entry) => entry.email === user.email);
+
+    if (existingIndex >= 0) {
+      users[existingIndex] = user;
+    } else {
+      users.push(user);
+    }
+
+    localStorage.setItem(STORAGE_KEYS.usersCsv, usersToCsv(users));
+  }
+
+  function authenticateUser(email, password) {
+    const users = parseUsersCsv(localStorage.getItem(STORAGE_KEYS.usersCsv));
+    return users.find((entry) => entry.email === email && entry.password === password) || null;
+  }
+
+  function setSessionUser(user) {
+    localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(user));
+  }
+
+  function RegisterPage() {
+    const [activeTab, setActiveTab] = React.useState("register");
+    const [registerMessage, setRegisterMessage] = React.useState("");
+    const [loginMessage, setLoginMessage] = React.useState("");
+    const [isRegisterError, setIsRegisterError] = React.useState(false);
+    const [isLoginError, setIsLoginError] = React.useState(false);
+
+    React.useEffect(() => {
+      initializeCsvStore();
+    }, []);
+
+    function handleRegister(event) {
+      event.preventDefault();
+      setRegisterMessage("");
+
+      const form = event.target;
+      if (!form.checkValidity()) {
+        setIsRegisterError(true);
+        setRegisterMessage("Please fill all registration fields correctly.");
+        return;
+      }
+
+      const user = {
+        fullName: form.fullName.value.trim(),
+        email: form.email.value.trim().toLowerCase(),
+        password: form.password.value,
+        course: form.course.value,
+        location: form.location.value.trim(),
+        registeredAt: new Date().toISOString()
+      };
+
+      upsertUserIntoCsv(user);
+      setIsRegisterError(false);
+      setRegisterMessage("Registration saved. Now login.");
+      form.reset();
+      setActiveTab("login");
+    }
+
+    function handleLogin(event) {
+      event.preventDefault();
+      setLoginMessage("");
+
+      const form = event.target;
+      if (!form.checkValidity()) {
+        setIsLoginError(true);
+        setLoginMessage("Enter email and password.");
+        return;
+      }
+
+      const email = form.loginEmail.value.trim().toLowerCase();
+      const password = form.loginPassword.value;
+      const user = authenticateUser(email, password);
+      if (!user) {
+        setIsLoginError(true);
+        setLoginMessage("Login failed. Check registered email/password.");
+        return;
+      }
+
+      setSessionUser(user);
+      setIsLoginError(false);
+      setLoginMessage("Login successful. Redirecting...");
+
+      const next = new URLSearchParams(window.location.search).get("next") || "learn.html";
+      window.setTimeout(() => {
+        window.location.href = next;
+      }, 500);
+    }
+
+    return (
+      <div className="card">
+        <div className="tab-buttons">
+          <button
+            type="button"
+            className={`button tab-button ${activeTab === "register" ? "active-tab" : ""}`}
+            onClick={() => setActiveTab("register")}
+          >
+            Register
+          </button>
+          <button
+            type="button"
+            className={`button tab-button ${activeTab === "login" ? "active-tab" : ""}`}
+            onClick={() => setActiveTab("login")}
+          >
+            Login
+          </button>
+        </div>
+
+        {activeTab === "register" && (
+          <form id="registerForm" onSubmit={handleRegister} noValidate autoComplete="on">
+            <h2>Create Account</h2>
+            <label htmlFor="fullName">Full Name:</label>
+            <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" autoComplete="name" required />
+
+            <label htmlFor="email">Email Address:</label>
+            <input type="email" id="email" name="email" placeholder="student@example.com" autoComplete="email" required />
+
+            <label htmlFor="password">Password:</label>
+            <input type="password" id="password" name="password" placeholder="Create a password" autoComplete="new-password" required />
+
+            <label htmlFor="course">Course Selection:</label>
+            <select id="course" name="course" required>
+              <option value="">Select Course</option>
+              <option value="mobile">Inner workings of mobile</option>
+              <option value="tv">Inner workings of television</option>
+              <option value="both">Inner workings of mobile and television</option>
+            </select>
+
+            <label htmlFor="location">Location:</label>
+            <input type="text" id="location" name="location" placeholder="City/State" autoComplete="address-level2" required />
+
+            <button type="submit" className="button" style={{ width: "100%" }}>Complete Registration</button>
+            {registerMessage && (
+              <p id="registerMessage" className={isRegisterError ? "status-error" : "status-success"} role="status" aria-live="polite">
+                {registerMessage}
+              </p>
+            )}
+          </form>
+        )}
+
+        {activeTab === "login" && (
+          <form id="loginForm" onSubmit={handleLogin} noValidate autoComplete="on">
+            <h2>Login</h2>
+            <label htmlFor="loginEmail">Email Address:</label>
+            <input type="email" id="loginEmail" name="loginEmail" placeholder="student@example.com" autoComplete="username" required />
+
+            <label htmlFor="loginPassword">Password:</label>
+            <input type="password" id="loginPassword" name="loginPassword" placeholder="Enter your password" autoComplete="current-password" required />
+
+            <button type="submit" className="button" style={{ width: "100%" }}>Login</button>
+            {loginMessage && (
+              <p id="loginMessage" className={isLoginError ? "status-error" : "status-success"} role="status" aria-live="polite">
+                {loginMessage}
+              </p>
+            )}
+          </form>
+        )}
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById("registerRoot")).render(<RegisterPage />);
+</script>
+</body>
+</html>
