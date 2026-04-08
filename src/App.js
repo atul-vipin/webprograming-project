@@ -244,13 +244,13 @@ function Navbar() {
 
   return (
     <div className="navbar">
-      <a href="/" className={location.pathname === '/' ? 'active-link' : ''}>Home</a>
-      {!user && <a href="/register" className={location.pathname === '/register' ? 'active-link' : ''}>Login</a>}
-      {user && <a href="/learn" className={location.pathname === '/learn' ? 'active-link' : ''}>Learn</a>}
-      {user && <a href="/assessment" className={location.pathname === '/assessment' ? 'active-link' : ''}>Assessment</a>}
-      <a href="/feedback.html">Feedback</a>
-      <a href="/testimonials.html">Testimonials</a>
-      <a href="/contact.html">Contact Us</a>
+      <Link to="/" className={location.pathname === '/' ? 'active-link' : ''}>Home</Link>
+      {!user && <Link to="/register" className={location.pathname === '/register' ? 'active-link' : ''}>Login</Link>}
+      {user && <Link to="/learn" className={location.pathname === '/learn' ? 'active-link' : ''}>Learn</Link>}
+      {user && <Link to="/assessment" className={location.pathname === '/assessment' ? 'active-link' : ''}>Assessment</Link>}
+      <Link to="/feedback" className={location.pathname === '/feedback' ? 'active-link' : ''}>Feedback</Link>
+      <Link to="/testimonials" className={location.pathname === '/testimonials' ? 'active-link' : ''}>Testimonials</Link>
+      <Link to="/contact" className={location.pathname === '/contact' ? 'active-link' : ''}>Contact Us</Link>
       {user && (
         <span className="nav-right">
           <button type="button" className="button tiny-btn" onClick={handleLogout}>Logout</button>
@@ -279,8 +279,8 @@ function HomePage() {
           <h1>Electronics Learning Center</h1>
           <p>Complete guide to TV and mobile internal parts and working principles</p>
           <div className="hero-buttons">
-            {!user && <a href="/register" className="button">Register or Login</a>}
-            <a href="/learn" className="button nav-protected">View Lessons</a>
+            {!user && <Link to="/register" className="button">Register or Login</Link>}
+            <Link to="/learn" className="button nav-protected">View Lessons</Link>
           </div>
           <p id="homeAuthHint" role="status" aria-live="polite">{hint}</p>
         </div>
@@ -320,7 +320,7 @@ function HomePage() {
         </div>
 
         <div className="card" style={{ textAlign: 'center' }}>
-          <a href="/learn" className="button nav-protected">Start Learning</a>
+          <Link to="/learn" className="button nav-protected">Start Learning</Link>
         </div>
       </div>
     </>
@@ -476,6 +476,245 @@ function RegisterPage() {
     </>
   );
 }
+
+function FeedbackPage() {
+  const [form, setForm] = React.useState({
+    name: '',
+    email: '',
+    learned: '',
+    suggestions: '',
+    rating: ''
+  });
+  const [message, setMessage] = React.useState('');
+  const [isError, setIsError] = React.useState(false);
+
+  function updateField(field) {
+    return (event) => {
+      setForm((prev) => ({ ...prev, [field]: event.target.value }));
+    };
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    setMessage('');
+
+    if (!form.name.trim() || !form.email.trim() || !form.learned.trim() || !form.suggestions.trim() || !form.rating) {
+      setIsError(true);
+      setMessage('Please complete all feedback fields.');
+      return;
+    }
+
+    const payload = {
+      name: form.name.trim(),
+      email: form.email.trim().toLowerCase(),
+      learned: form.learned.trim(),
+      suggestions: form.suggestions.trim(),
+      rating: form.rating,
+      submittedAt: new Date().toISOString()
+    };
+
+    const list = loadList(STORAGE_KEYS.feedbackList);
+    list.push(payload);
+    saveList(STORAGE_KEYS.feedbackList, list);
+    setIsError(false);
+    setMessage('Thanks. Your feedback was saved successfully.');
+    setForm({ name: '', email: '', learned: '', suggestions: '', rating: '' });
+  }
+
+  return (
+    <>
+      <Navbar />
+      <div className="hero">
+        <h1>User Feedback</h1>
+        <p>Tell us what worked and what we should improve</p>
+      </div>
+
+      <div className="container">
+        <form onSubmit={handleSubmit} noValidate>
+          <div className="card">
+            <label htmlFor="feedbackName">Name:</label>
+            <input type="text" id="feedbackName" value={form.name} onChange={updateField('name')} required />
+
+            <label htmlFor="feedbackEmail">Email:</label>
+            <input type="email" id="feedbackEmail" value={form.email} onChange={updateField('email')} required />
+
+            <label htmlFor="learned">What did you learn?</label>
+            <textarea id="learned" rows="4" maxLength="240" value={form.learned} onChange={updateField('learned')} required />
+
+            <label htmlFor="suggestions">Suggestions:</label>
+            <textarea id="suggestions" rows="4" maxLength="240" value={form.suggestions} onChange={updateField('suggestions')} required />
+
+            <label htmlFor="rating">Rating</label>
+            <select id="rating" value={form.rating} onChange={updateField('rating')} required>
+              <option value="">Select rating</option>
+              <option value="Excellent">Excellent</option>
+              <option value="Good">Good</option>
+              <option value="Average">Average</option>
+              <option value="Poor">Poor</option>
+            </select>
+
+            <button type="submit" className="button" style={{ width: '100%' }}>Submit Feedback</button>
+            {message && (
+              <p id="feedbackMessage" className={isError ? 'status-error' : 'status-success'} role="status" aria-live="polite">
+                {message}
+              </p>
+            )}
+          </div>
+        </form>
+      </div>
+    </>
+  );
+}
+
+function ContactPage() {
+  const [form, setForm] = React.useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
+  const [status, setStatus] = React.useState('');
+  const [isError, setIsError] = React.useState(false);
+
+  function updateField(field) {
+    return (event) => {
+      setForm((prev) => ({ ...prev, [field]: event.target.value }));
+    };
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    setStatus('');
+
+    if (!form.name.trim() || !form.email.trim() || !form.subject.trim() || !form.message.trim()) {
+      setIsError(true);
+      setStatus('Please fill all contact fields.');
+      return;
+    }
+
+    const payload = {
+      name: form.name.trim(),
+      email: form.email.trim().toLowerCase(),
+      subject: form.subject.trim(),
+      message: form.message.trim(),
+      submittedAt: new Date().toISOString()
+    };
+
+    const list = loadList(STORAGE_KEYS.contactList);
+    list.push(payload);
+    saveList(STORAGE_KEYS.contactList, list);
+    setIsError(false);
+    setStatus('Thanks! We received your message.');
+    setForm({ name: '', email: '', subject: '', message: '' });
+  }
+
+  return (
+    <>
+      <Navbar />
+      <div className="hero">
+        <h1>Contact Us</h1>
+        <p>Questions about courses, enrollment, or assessments? Reach out anytime.</p>
+      </div>
+
+      <div className="container">
+        <div className="card">
+          <h2>Support Desk</h2>
+          <ul className="info-list">
+            <li>Email: support@electronicslearningcenter.com</li>
+            <li>Phone: +91 9496646692</li>
+            <li>Hours: Mon to Sat, 9:00 AM to 6:00 PM</li>
+            <li>Location: K block, Vellore Institute of Technology</li>
+          </ul>
+        </div>
+
+        <div className="card">
+          <h2>Send a Message</h2>
+          <form onSubmit={handleSubmit} noValidate>
+            <label htmlFor="contactName">Full Name:</label>
+            <input type="text" id="contactName" placeholder="Enter your full name" value={form.name} onChange={updateField('name')} required />
+
+            <label htmlFor="contactEmail">Email:</label>
+            <input type="email" id="contactEmail" placeholder="student@example.com" value={form.email} onChange={updateField('email')} required />
+
+            <label htmlFor="contactSubject">Subject:</label>
+            <input type="text" id="contactSubject" placeholder="Course access, fees, or support" value={form.subject} onChange={updateField('subject')} required />
+
+            <label htmlFor="contactMessage">Message:</label>
+            <textarea id="contactMessage" rows="5" maxLength="400" value={form.message} onChange={updateField('message')} required />
+
+            <button type="submit" className="button" style={{ width: '100%' }}>Send Message</button>
+            {status && (
+              <p id="contactMessageStatus" className={isError ? 'status-error' : 'status-success'} role="status" aria-live="polite">
+                {status}
+              </p>
+            )}
+          </form>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function TestimonialsPage() {
+  const user = getSessionUser();
+
+  return (
+    <>
+      <Navbar />
+      <div className="hero">
+        <h1>Student Testimonials</h1>
+        <p>Real feedback from learners who completed the TV and mobile tracks.</p>
+      </div>
+
+      <div className="container">
+        <div className="testimonial-grid">
+          <div className="testimonial-card">
+            <h3>Ravi Menon</h3>
+            <p className="testimonial-role">Mobile Repair Intern</p>
+            <p className="testimonial-quote">"The module on power ICs made me confident in diagnosing charging issues. The flowcharts are practical."</p>
+          </div>
+
+          <div className="testimonial-card">
+            <h3>Priya Shah</h3>
+            <p className="testimonial-role">TV Service Trainee</p>
+            <p className="testimonial-quote">"Clear explanations of the T-CON and backlight system helped me fix a no-display case in the lab."</p>
+          </div>
+
+          <div className="testimonial-card">
+            <h3>Arjun Das</h3>
+            <p className="testimonial-role">Electronics Student</p>
+            <p className="testimonial-quote">"The combined diagnostics checklist is gold. It turned guesswork into a repeatable process."</p>
+          </div>
+
+          <div className="testimonial-card">
+            <h3>Neha Rao</h3>
+            <p className="testimonial-role">Junior Technician</p>
+            <p className="testimonial-quote">"Assessment questions matched the lessons. I could track exactly where I needed revision."</p>
+          </div>
+
+          <div className="testimonial-card">
+            <h3>Samuel Ortiz</h3>
+            <p className="testimonial-role">Workshop Participant</p>
+            <p className="testimonial-quote">"Short videos and parts list made it easy to learn in small sessions after work."</p>
+          </div>
+
+          <div className="testimonial-card">
+            <h3>Aisha Khan</h3>
+            <p className="testimonial-role">Apprentice</p>
+            <p className="testimonial-quote">"The course maps each board to real symptoms. I used it to isolate a bad audio board quickly."</p>
+          </div>
+        </div>
+
+        {!user && (
+          <div className="card" style={{ textAlign: 'center' }}>
+            <Link to="/register" className="button">Join the Next Batch</Link>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
 function LearnPage() {
   const user = getSessionUser();
 
@@ -551,10 +790,7 @@ function LearnPage() {
               <li>Validate HDMI handshake and isolate the failing stage</li>
             </ul>
             <div className="media-grid">
-              <video className="learn-media" controls preload="metadata" poster="/tv.jpg">
-                <source src="/tv.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
+              <p className="learn-media-missing">Videos are not included in the hosted version.</p>
             </div>
           </div>
         )}
@@ -602,10 +838,7 @@ function LearnPage() {
               <li>Trace a no network issue to the RF block</li>
             </ul>
             <div className="media-grid">
-              <video className="learn-media" controls preload="metadata" poster="/mobile.jpg">
-                <source src="/mobile.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
+              <p className="learn-media-missing">Videos are not included in the hosted version.</p>
             </div>
           </div>
         )}
@@ -652,7 +885,7 @@ function LearnPage() {
         )}
 
         <div style={{ textAlign: 'center' }}>
-          <a href="/assessment" className="button">Ready for Assessment</a>
+          <Link to="/assessment" className="button">Ready for Assessment</Link>
         </div>
       </div>
     </>
@@ -972,6 +1205,9 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/learn" element={<LearnPage />} />
         <Route path="/assessment" element={<AssessmentPage />} />
+        <Route path="/feedback" element={<FeedbackPage />} />
+        <Route path="/testimonials" element={<TestimonialsPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </BrowserRouter>
