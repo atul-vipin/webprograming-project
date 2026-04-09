@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BrowserRouter, Routes, Route, useLocation, Link } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation, Link } from 'react-router-dom';
 import './App.css';
 
 const STORAGE_KEYS = {
@@ -1199,7 +1199,7 @@ function AdminPage() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -1210,7 +1210,7 @@ function App() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
